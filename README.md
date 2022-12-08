@@ -53,7 +53,7 @@ Goal is to master SQL Injection Discovery, Detection and Exploitation
 ---
 
 - Some important SQL Commands:
-
+```sql
 > - `SELECT` - extracts data from a database
 > - `UPDATE` - updates data in a database
 > - `DELETE` - deletes data from a database
@@ -65,7 +65,7 @@ Goal is to master SQL Injection Discovery, Detection and Exploitation
 > - `DROP TABLE` - deletes a table
 > - `CREATE INDEX` - creates an index (search key)
 > - `DROP INDEX` - deletes an index
-
+```
 <div align = center>
 <br>
 <img src=https://user-images.githubusercontent.com/68887544/187085819-94fadcdf-e87b-4885-b1e3-4b77b6e64fe3.png width = 800px/>
