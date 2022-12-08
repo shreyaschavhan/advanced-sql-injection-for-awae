@@ -9,6 +9,7 @@ Goal is to master SQL Injection Discovery, Detection and Exploitation
 >   - [Advanced SQL Injection Cheatsheet](https://github.com/kleiton0x00/Advanced-SQL-Injection-Cheatsheet)
 >   - Rigorous Google Dorking
 >   - Reddit Dorking
+>   - [Web Security Academy - SQL Injection](https://portswigger.net/web-security/sql-injection)
 
 
 <div align = center>
@@ -85,6 +86,7 @@ Goal is to master SQL Injection Discovery, Detection and Exploitation
 - Dump the database
 ```
 
+---
 
 ## MySQL Error or UNION based SQLi
 
