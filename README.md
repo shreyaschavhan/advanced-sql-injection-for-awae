@@ -749,6 +749,21 @@ This one is the easiest of all SQLi attacks.
 
 ---
 
+## The Alternative Way of using `WhiteSpace` in SQLi (MySQL)
+> ```sql
+> /**/
+> /**_**/
+> %23nuLL%0A
+> %23qa%0A%23%0A
+> %23foo*%2F*bar%0D%0A
+> +
+> /*️*/
+> /*️⃣*/
+> ```
+
+
+---
+
 ## MySQL Boolean Based Blind SQLi
 
 - Identifying the vulnerability:
