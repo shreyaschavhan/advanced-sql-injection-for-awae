@@ -10,6 +10,7 @@ Goal is to master SQL Injection Discovery, Detection and Exploitation
 >   - Rigorous Google Dorking
 >   - Reddit Dorking
 >   - [Web Security Academy - SQL Injection](https://portswigger.net/web-security/sql-injection)
+>   - My Brain + My Experience + My Logic 
 
 
 <div align = center>
