@@ -80,3 +80,15 @@
 > Union Select (0*1337-0),(0*1337-0),(0*1337-0),(0*1337-0)
 > Union Select 34=35,34=35,34=35,34=35
 > ```
+
+## The Alternative Way of using `WhiteSpace` in SQLi (MySQL)
+> ```sql
+> /**/
+> /**_**/
+> %23nuLL%0A
+> %23qa%0A%23%0A
+> %23foo*%2F*bar%0D%0A
+> +
+> /*️*/
+> /*️⃣*/
+> ```
