@@ -26,9 +26,14 @@ Goal is to master SQL Injection Discovery, Detection and Exploitation
 - Learning a lil' bit of SQL
 - SQL Injection Methodology Overview
 - MYSQL Injection Methodology
-- PostgreSQL Injection Methodology
-- Oracle Injection Methodology
-- MSSQL Injection Methodology
+  - MySQL Error or UNION Based SQLi
+    - Routed Queries (Advanced WAF Bypass for Error or UNION based MySQLi)
+    - WorkAround when UNION queires doesn't work (MySQL Error Based SQLi)
+  - The Alternative ways of using `AND/OR 0` in SQLi
+  - The Alternative ways of using `NULL` in SQLi
+  - The Alternative way of using `WhiteSpace` in SQLi
+  - MySQL Boolean Based Blind SQLi
+  - MySQL Time Based Blind SQLi
 ```
 
 
