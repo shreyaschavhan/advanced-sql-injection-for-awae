@@ -149,6 +149,7 @@ This one is the easiest of all SQLi attacks.
 > "
 > \"
 > )"
+> ;
 > ```
 
 ---
